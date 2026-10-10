@@ -56,7 +56,7 @@ export function InquiryActions({ inquiry }: { inquiry: Inquiry }) {
             }}
             className="px-5 py-2 text-sm text-gray-500"
           >
-            Cancelar
+            Devolver al catálogo
           </button>
         </>
       )}

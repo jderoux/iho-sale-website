@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { CatalogCategoryGroup, CatalogProduct, ProductCategory, ProductCategoryNode } from "@/lib/types";
 
 const PUBLIC_COLUMNS =
-  "id, brand, model, sku, dimensions, description, category, category_id, msrp, discount_percent, sale_price, stock, image_path";
+  "id, brand, model, sku, dimensions, description, category, category_id, msrp, discount_percent, sale_price, stock, available, image_path";
 
 type ProductRow = {
   id: string;
@@ -18,6 +18,8 @@ type ProductRow = {
   discount_percent: number | string;
   sale_price: number | string;
   stock: number;
+  available?: number;
+  held?: number;
   image_path: string | null;
   cost?: number | string;
 };
@@ -47,6 +49,7 @@ export function mapAdminProduct(row: ProductRow) {
     msrp: row.msrp == null || row.msrp === "" ? null : toNumber(row.msrp),
     discountPercent: row.discount_percent == null || row.discount_percent === "" ? null : toNumber(row.discount_percent),
     salePrice: row.sale_price == null || row.sale_price === "" ? null : toNumber(row.sale_price),
+    held: toNumber(row.held),
   };
 }
 
@@ -106,7 +109,7 @@ export function catalogCategoryTree(categories: ProductCategoryNode[], counts: M
 
 export async function getInStockCategoryCounts() {
   const supabase = await createClient();
-  const { data, error } = await supabase.from("products").select("category_id").gt("stock", 0).not("sale_price", "is", null);
+  const { data, error } = await supabase.from("products").select("category_id").gt("available", 0).not("sale_price", "is", null);
   if (error) throw new Error(error.message);
   const counts = new Map<string, number>();
   for (const row of data ?? []) {
@@ -129,7 +132,7 @@ export async function getCatalog(filters: {
   let query = supabase
     .from("products")
     .select(PUBLIC_COLUMNS)
-    .gt("stock", 0)
+    .gt("available", 0)
     .not("sale_price", "is", null)
     .order("brand")
     .order("model");
@@ -151,12 +154,12 @@ export async function getCatalog(filters: {
 
   const { data, error } = await query;
   if (error) throw new Error(error.message);
-  return ((data ?? []) as ProductRow[]).map(mapProduct);
+  return ((data ?? []) as ProductRow[]).map((row) => ({ ...mapProduct(row), stock: toNumber(row.available) }));
 }
 
 export async function getCatalogBrands() {
   const supabase = await createClient();
-  const { data, error } = await supabase.from("products").select("brand").gt("stock", 0).not("sale_price", "is", null);
+  const { data, error } = await supabase.from("products").select("brand").gt("available", 0).not("sale_price", "is", null);
   if (error) throw new Error(error.message);
   return [...new Set((data ?? []).map((row) => row.brand as string))].sort((a, b) =>
     a.localeCompare(b, "es")

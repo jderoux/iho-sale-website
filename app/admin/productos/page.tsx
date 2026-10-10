@@ -26,6 +26,7 @@ export default async function ProductsPage() {
               <th className="px-4 py-3 font-medium">MSRP</th>
               <th className="px-4 py-3 font-medium">Venta</th>
               <th className="px-4 py-3 font-medium">Stock</th>
+              <th className="px-4 py-3 font-medium">Reserva</th>
             </tr>
           </thead>
           <tbody>
@@ -61,12 +62,13 @@ export default async function ProductsPage() {
                     )}
                   </td>
                   <td className="px-4 py-3">{product.stock}</td>
+                  <td className="px-4 py-3">{product.held > 0 ? product.held : ""}</td>
                 </tr>
               );
             })}
             {products.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-gray-500">
+                <td colSpan={8} className="px-4 py-8 text-gray-500">
                   Todavía no hay piezas.
                 </td>
               </tr>

@@ -50,6 +50,15 @@ export async function saveProduct(formData: FormData) {
   if (!Number.isInteger(stock) || stock < 0) {
     return { ok: false as const, message: "El stock tiene que ser un número entero." };
   }
+  if (id) {
+    const { data: currentProduct } = await supabase.from("products").select("held").eq("id", id).maybeSingle();
+    if (currentProduct && stock < Number(currentProduct.held)) {
+      return {
+        ok: false as const,
+        message: "El stock no puede quedar por debajo de la reserva. Devuelve la solicitud al catálogo o despacha la cotización.",
+      };
+    }
+  }
 
   const payload = {
     brand,
@@ -132,9 +141,19 @@ export async function updateInquiryStatus(formData: FormData) {
     .single();
   if (readError || !current) return { ok: false as const, message: "Solicitud no encontrada." };
   if (current.status === "surtida") return { ok: false as const, message: "Esta solicitud ya fue surtida." };
+  if (current.status === "cancelada") return { ok: false as const, message: "Esta solicitud está cancelada." };
 
-  const { error } = await supabase.from("inquiries").update({ status }).eq("id", id);
-  if (error) return { ok: false as const, message: error.message };
+  if (status === "cancelada") {
+    const { error } = await supabase.rpc("release_inquiry", { p_inquiry_id: id });
+    if (error) return { ok: false as const, message: error.message };
+    revalidatePath("/");
+    revalidatePath("/productos");
+    revalidatePath("/admin/productos");
+  } else {
+    const { error } = await supabase.from("inquiries").update({ status }).eq("id", id);
+    if (error) return { ok: false as const, message: error.message };
+  }
+
   revalidatePath("/admin/solicitudes");
   revalidatePath(`/admin/solicitudes/${id}`);
   return { ok: true as const };

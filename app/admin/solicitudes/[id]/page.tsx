@@ -95,6 +95,10 @@ export default async function InquiryPage({ params }: { params: Promise<{ id: st
         </div>
       </div>
 
+      {(inquiry.status === "nueva" || inquiry.status === "en_contacto") && (
+        <p className="text-sm text-gray-600">Estas unidades están reservadas y no salen en el outlet.</p>
+      )}
+
       <div className="flex flex-wrap items-start gap-3">
         {quoteId ? (
           <Link href={`/admin/cotizaciones/${quoteId}`} className="bg-arquiluz-black px-5 py-2 text-sm text-white">

@@ -161,6 +161,11 @@ export function ProductForm({ product, categories }: { product?: AdminProduct; c
           <TextField label="Costo" name="cost" value={draft.cost} onChange={(cost) => setDraft({ ...draft, cost })} inputMode="decimal" required />
           <TextField label="Stock" name="stock" value={draft.stock} onChange={(stock) => setDraft({ ...draft, stock })} inputMode="numeric" required />
         </div>
+        {product && product.held > 0 && (
+          <p className="text-sm text-gray-500">
+            Hay {product.held} en reserva. El stock no puede bajar de esa cantidad.
+          </p>
+        )}
         <div className="grid gap-4 sm:grid-cols-3">
           <TextField
             label="MSRP"

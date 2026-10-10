@@ -36,6 +36,7 @@ export type CatalogProduct = {
 export type AdminProduct = Omit<CatalogProduct, "msrp" | "discountPercent" | "salePrice"> & {
   cost: number;
   categoryName: string;
+  held: number;
   msrp: number | null;
   discountPercent: number | null;
   salePrice: number | null;

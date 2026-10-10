@@ -5,7 +5,7 @@ import { productImageUrl, toNumber } from "@/lib/format";
 import type { AdminProduct, Inquiry, InquiryItem, InquiryStatus, ProductCategoryNode } from "@/lib/types";
 
 const ADMIN_COLUMNS =
-  "id, brand, model, sku, dimensions, description, category, category_id, cost, msrp, discount_percent, sale_price, stock, image_path";
+  "id, brand, model, sku, dimensions, description, category, category_id, cost, msrp, discount_percent, sale_price, stock, held, image_path";
 
 function withCategoryName(
   product: ReturnType<typeof mapAdminProduct>,

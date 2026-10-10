@@ -290,10 +290,20 @@ export async function dispatchQuote(formData: FormData) {
   const { error } = await supabase.rpc("dispatch_quote", { p_quote_id: saved.id });
   if (error) return { ok: false as const, message: error.message };
 
+  const { data: dispatched } = await supabase.from("quotes").select("inquiry_id").eq("id", saved.id).maybeSingle();
+
   revalidatePath("/");
   revalidatePath("/productos");
   revalidatePath("/admin/productos");
+  revalidatePath("/admin/solicitudes");
   revalidatePath("/admin/cotizaciones");
   revalidatePath(`/admin/cotizaciones/${saved.id}`);
-  return { ok: true as const, id: saved.id, message: "Despachada. El stock ya bajó." };
+  if (dispatched?.inquiry_id) revalidatePath(`/admin/solicitudes/${dispatched.inquiry_id}`);
+  return {
+    ok: true as const,
+    id: saved.id,
+    message: dispatched?.inquiry_id
+      ? "Despachada. El stock ya bajó y la reserva quedó cerrada."
+      : "Despachada. El stock ya bajó.",
+  };
 }
